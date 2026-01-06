@@ -1,36 +1,36 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Check, Minus, Plus, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { SimplePortList } from "@/components/chat/state-cards/project-proposal/components/simple-port-list";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, X, Minus, Check } from "lucide-react";
-import { nanoid } from "@/lib/utils";
-import { SimplePortList } from "@/components/chat/state-cards/project-proposal/components/simple-port-list";
-import { DEVBOX_RUNTIME_ICONS } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-icons";
-import { DEVBOX_RUNTIMES } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-runtimes";
-import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
-import { AVAILABLE_CLUSTER_TYPES } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-types";
+import { useProjectCreate } from "@/hooks/brain/use-project-create";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import type {
-  DevBox,
-  Database,
   App,
+  Database,
+  DevBox,
   ProjectProposal,
 } from "@/lib/brain/resources/project/project-schemas/project-proposal-schema";
-import { useProjectCreate } from "@/hooks/brain/use-project-create";
+import { CLUSTER_TYPE_ICON_MAP } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-icons";
+import { AVAILABLE_CLUSTER_TYPES } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-types";
+import { DEVBOX_RUNTIME_ICONS } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-icons";
+import { DEVBOX_RUNTIMES } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-runtimes";
+import { nanoid } from "@/lib/utils";
 import { useResourceQuotaChecker } from "@/lib/validation/resource-quota-checker";
-import { devboxCreateFormSchema } from "@/schemas/forms/devbox/devbox-create-form-schema";
 import { clusterCreateFormSchema } from "@/schemas/forms/cluster/cluster-create-form-schema";
+import { devboxCreateFormSchema } from "@/schemas/forms/devbox/devbox-create-form-schema";
 import { launchpadCreateFormSchema } from "@/schemas/forms/launchpad/launchpad-create-form-schema";
-import { useRouter } from "next/navigation";
-import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
-import { useQuery } from "@tanstack/react-query";
 
 interface DevboxTemplate {
   runtime: string;
@@ -74,8 +74,10 @@ export function CreateNewProject({
     onSuccess: (createdProjectName: string) => {
       onConfirm(createdProjectName);
       onOpenChange(false);
-      // Navigate to the created project
-      router.push(`/projects/${createdProjectName}`);
+      // Navigate to the created project - guard against undefined
+      if (createdProjectName && createdProjectName !== "undefined") {
+        router.push(`/projects/${createdProjectName}`);
+      }
     },
     onError: (error: any) => {
       console.error("Project creation failed:", error);

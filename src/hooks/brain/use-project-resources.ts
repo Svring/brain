@@ -2,22 +2,23 @@ import { useQuery } from "@tanstack/react-query";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 
 export default function useProjectResources(projectName: string) {
-  const { project } = useTRPCClients();
+	const { project } = useTRPCClients();
 
-  const {
-    data: result,
-    isLoading,
-    error,
-  } = useQuery({
-    ...project.getResources.queryOptions(projectName),
-  });
+	const {
+		data: result,
+		isLoading,
+		error,
+	} = useQuery({
+		...project.getResources.queryOptions(projectName),
+		enabled: Boolean(projectName), // Prevent query when projectName is undefined/null/empty
+	});
 
-  // console.log("result", result);
+	// console.log("result", result);
 
-  return {
-    targets: result?.targets || [],
-    resources: result?.resources || [],
-    isLoading,
-    error,
-  };
+	return {
+		targets: result?.targets || [],
+		resources: result?.resources || [],
+		isLoading,
+		error,
+	};
 }

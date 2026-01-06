@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import type React from "react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { ProjectProposalCard } from "@/components/chat/state-cards/project-proposal/project-proposal-card";
@@ -117,13 +117,27 @@ const DevenvDeploymentCard = ({
       onSuccess,
     });
 
+  // Use ref to track if auto-deploy has been triggered to prevent infinite loops
+  const hasAutoDeployedRef = useRef(false);
+  // Store latest deploy function in ref to avoid dependency issues
+  const deployDevenvRef = useRef(deployDevenv);
+  const sessionIdRef = useRef(sessionId);
+  const internalProposalRef = useRef(internalProposal);
+
+  // Keep refs up to date
+  useEffect(() => {
+    deployDevenvRef.current = deployDevenv;
+    sessionIdRef.current = sessionId;
+    internalProposalRef.current = internalProposal;
+  }, [deployDevenv, sessionId, internalProposal]);
+
   const handleDeploy = useCallback(async () => {
     // If sessionId is present, request login instead of creating project
-    if (sessionId) {
+    if (sessionIdRef.current) {
       // Pass internalProposal (which may have been modified by user) in ProjectProposal format
       const queryParams = {
-        sessionId: sessionId,
-        args: JSON.stringify(internalProposal),
+        sessionId: sessionIdRef.current,
+        args: JSON.stringify(internalProposalRef.current),
       };
       console.log("query params", queryParams);
       requestLogin({
@@ -133,15 +147,33 @@ const DevenvDeploymentCard = ({
       return;
     }
 
-    await deployDevenv();
-  }, [sessionId, internalProposal, deployDevenv]);
+    await deployDevenvRef.current();
+  }, []);
 
-  // Auto-trigger deploy if trial is present
+  // Auto-trigger deploy if trial is present (only once when component appears)
+  // trial is a URL flag, so we only need to watch trial itself
   useEffect(() => {
-    if (trial) {
+    // Only trigger when trial becomes truthy and we haven't deployed yet
+    if (trial && !hasAutoDeployedRef.current && !isCreating) {
+      hasAutoDeployedRef.current = true;
       handleDeploy();
     }
-  }, [trial, handleDeploy]);
+    // Reset ref if trial becomes false (for testing purposes)
+    if (!trial) {
+      hasAutoDeployedRef.current = false;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trial]); // Only depend on trial - it's a URL flag that indicates auto-deploy should happen
+
+  // Separate effect to handle case where component mounts with trial=true but isCreating=true
+  // This ensures we trigger when isCreating becomes false (component ready)
+  useEffect(() => {
+    if (trial && !hasAutoDeployedRef.current && !isCreating) {
+      hasAutoDeployedRef.current = true;
+      handleDeploy();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCreating]); // Watch isCreating separately to trigger when component becomes ready
 
   return (
     <div className="w-full border p-2 rounded-xl">

@@ -3,7 +3,7 @@
 import { CircleCheckBigIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import type React from "react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { ProjectTemplateCard } from "@/components/chat/state-cards/project-proposal/project-template-card";
 import { TemplateInputDialog } from "@/components/project/create-project/template-input-dialog";
 import { useHomeChat } from "@/components/provider/home-chat-provider";
@@ -53,6 +53,9 @@ const TemplateDeploymentCard = ({
     isDeploying,
   } = useTemplateDeployment(args.template_name);
 
+  // Use ref to track if auto-deploy has been triggered to prevent infinite loops
+  const hasAutoDeployedRef = useRef(false);
+
   // Unified handler for both initial deploy and dialog submit
   const handleDeployOrSubmit = (templateForm?: any) => {
     // If required inputs exist and none were provided, open dialog first
@@ -82,12 +85,29 @@ const TemplateDeploymentCard = ({
     );
   };
 
-  // Auto-trigger deploy if trial is present
+  // Auto-trigger deploy if trial is present (only once when component appears)
+  // trial is a URL flag, so we only need to watch trial itself
   useEffect(() => {
-    if (trial && !isLoading && !error && template) {
+    if (trial && !hasAutoDeployedRef.current && !isLoading && !error && template && !isDeploying) {
+      hasAutoDeployedRef.current = true;
       handleDeployOrSubmit();
     }
-  }, [trial, isLoading, error, template]);
+    // Reset ref if trial becomes false (for testing purposes)
+    if (!trial) {
+      hasAutoDeployedRef.current = false;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trial]); // Only depend on trial - it's a URL flag that indicates auto-deploy should happen
+
+  // Separate effect to handle case where component mounts with trial=true but dependencies aren't ready
+  // This ensures we trigger when component becomes ready (template loaded, not deploying, etc.)
+  useEffect(() => {
+    if (trial && !hasAutoDeployedRef.current && !isLoading && !error && template && !isDeploying) {
+      hasAutoDeployedRef.current = true;
+      handleDeployOrSubmit();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, error, template, isDeploying]); // Watch readiness state separately
 
   // Show loading state
   if (isLoading) {

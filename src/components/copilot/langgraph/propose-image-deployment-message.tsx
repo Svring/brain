@@ -3,7 +3,7 @@
 import { CircleCheckBigIcon, Container, Hammer, Rocket } from "lucide-react";
 import { usePathname } from "next/navigation";
 import type React from "react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { ProjectProposalCard } from "@/components/chat/state-cards/project-proposal/project-proposal-card";
 import { useHomeChat } from "@/components/provider/home-chat-provider";
 import { Button } from "@/components/ui/button";
@@ -48,13 +48,29 @@ const ImageDeploymentCard = ({
   const { internalProposal, setInternalProposal, deployImage, isCreating } =
     useImageDeployment(args);
 
+  // Use ref to track if auto-deploy has been triggered to prevent infinite loops
+  const hasAutoDeployedRef = useRef(false);
+  // Store latest functions in refs to avoid dependency issues
+  const deployImageRef = useRef(deployImage);
+  const sessionIdRef = useRef(sessionId);
+  const internalProposalRef = useRef(internalProposal);
+  const onSuccessRef = useRef(onSuccess);
+
+  // Keep refs up to date
+  useEffect(() => {
+    deployImageRef.current = deployImage;
+    sessionIdRef.current = sessionId;
+    internalProposalRef.current = internalProposal;
+    onSuccessRef.current = onSuccess;
+  }, [deployImage, sessionId, internalProposal, onSuccess]);
+
   const handleDeploy = useCallback(async () => {
     // If sessionId is present, request login instead of creating project
-    if (sessionId) {
+    if (sessionIdRef.current) {
       // Pass internalProposal (which may have been modified by user) in ProjectProposal format
       const queryParams = {
-        sessionId: sessionId,
-        args: JSON.stringify(internalProposal),
+        sessionId: sessionIdRef.current,
+        args: JSON.stringify(internalProposalRef.current),
       };
       console.log("query params", queryParams);
       requestLogin({
@@ -65,9 +81,9 @@ const ImageDeploymentCard = ({
     }
 
     try {
-      const projectName = await deployImage();
-      if (onSuccess) {
-        onSuccess(projectName);
+      const projectName = await deployImageRef.current();
+      if (onSuccessRef.current) {
+        onSuccessRef.current(projectName);
       }
     } catch (error) {
       console.error(
@@ -75,14 +91,33 @@ const ImageDeploymentCard = ({
         error
       );
     }
-  }, [sessionId, internalProposal, deployImage, onSuccess]);
+  }, []);
 
-  // Auto-trigger deploy if trial is present
+  // Auto-trigger deploy if trial is present (only once when component appears)
+  // trial is a URL flag, so we only need to watch trial itself
   useEffect(() => {
-    if (trial) {
+    if (trial && !hasAutoDeployedRef.current && !isCreating) {
+      hasAutoDeployedRef.current = true;
       handleDeploy();
     }
-  }, [trial, handleDeploy]);
+    // Reset ref if trial becomes false (for testing purposes)
+    if (!trial) {
+      hasAutoDeployedRef.current = false;
+    }
+    // handleDeploy is stable (empty deps), isCreating checked inside condition
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trial]); // Only depend on trial - it's a URL flag that indicates auto-deploy should happen
+
+  // Separate effect to handle case where component mounts with trial=true but isCreating=true
+  // This ensures we trigger when isCreating becomes false (component ready)
+  useEffect(() => {
+    if (trial && !hasAutoDeployedRef.current && !isCreating) {
+      hasAutoDeployedRef.current = true;
+      handleDeploy();
+    }
+    // handleDeploy is stable (empty deps), trial checked via ref/condition
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCreating]); // Watch isCreating separately to trigger when component becomes ready
 
   return (
     <div className="w-full border p-2 rounded-xl">

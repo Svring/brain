@@ -167,10 +167,10 @@ export async function finalizeDeploymentFlow(args: {
 		});
 	}
 
-	if (openProjectChat) {
+	if (openProjectChat && projectName && projectName !== "undefined") {
 		openProjectChat(projectName);
 	}
-	if (routerPush) {
+	if (routerPush && projectName && projectName !== "undefined") {
 		routerPush(`/projects/${projectName}`);
 	}
 }

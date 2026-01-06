@@ -104,7 +104,10 @@ export function FlowgraphBreadcrumb({
 	const projectDisplayName = projectData.displayName;
 
 	const handleProjectSelect = (selectedProjectName: string) => {
-		router.push(`/projects/${selectedProjectName}`);
+		// Guard against undefined or invalid project name
+		if (selectedProjectName && selectedProjectName !== "undefined") {
+			router.push(`/projects/${selectedProjectName}`);
+		}
 	};
 
 	// Validation function based on devbox naming schema
