@@ -72,6 +72,18 @@ const AiProxyDeleteTokenResponseSchema = z.object({
 	message: z.literal("Token deleted successfully"),
 });
 
+// Update Token Status Schemas
+const AiProxyUpdateTokenStatusRequestSchema = z.object({
+	id: z.number(),
+	status: z.literal(1),
+});
+
+const AiProxyUpdateTokenStatusResponseSchema = z.object({
+	code: z.number(),
+	data: z.any().optional(),
+	message: z.string(),
+});
+
 // ===== TYPES =====
 
 export type AiProxyCreateTokenRequest = z.infer<
@@ -94,6 +106,12 @@ export type AiProxyDeleteTokenRequest = z.infer<
 >;
 export type AiProxyDeleteTokenResponse = z.infer<
 	typeof AiProxyDeleteTokenResponseSchema
+>;
+export type AiProxyUpdateTokenStatusRequest = z.infer<
+	typeof AiProxyUpdateTokenStatusRequestSchema
+>;
+export type AiProxyUpdateTokenStatusResponse = z.infer<
+	typeof AiProxyUpdateTokenStatusResponseSchema
 >;
 
 // ===== API CLIENT CREATION =====
@@ -184,6 +202,18 @@ export async function deleteAiProxyTokenService(
 	const api = await createAiProxyApi(context);
 	const response = await api.delete(`/user/token/${validatedRequest.id}`);
 	return AiProxyDeleteTokenResponseSchema.parse(response.data);
+}
+
+export async function updateAiProxyTokenStatusService(
+	request: any,
+	context: AiProxyApiContext,
+): Promise<AiProxyUpdateTokenStatusResponse> {
+	const validatedRequest = AiProxyUpdateTokenStatusRequestSchema.parse(request);
+	const api = await createAiProxyApi(context);
+	const response = await api.post(`/user/token/${validatedRequest.id}`, {
+		status: validatedRequest.status,
+	});
+	return AiProxyUpdateTokenStatusResponseSchema.parse(response.data);
 }
 
 // ===== QUERY OPERATIONS =====

@@ -6,6 +6,7 @@ import {
 	getAiProxyBillingQuotaService,
 	getAiProxyFreeUsageService,
 	getAiProxyTokensService,
+	updateAiProxyTokenStatusService,
 } from "@/lib/sealos/resources/ai-proxy/ai-proxy-api/ai-proxy-api-service";
 import type { AiProxyContext } from "./ai-proxy-trpc-context";
 
@@ -19,6 +20,12 @@ const AiProxyCreateTokenRequestSchema = z.object({
 // Delete Token Schema
 const AiProxyDeleteTokenRequestSchema = z.object({
 	id: z.number(),
+});
+
+// Update Token Status Schema
+const AiProxyUpdateTokenStatusRequestSchema = z.object({
+	id: z.number(),
+	status: z.literal(1),
 });
 
 const t = initTRPC.context<AiProxyContext>().create();
@@ -77,6 +84,12 @@ export const aiProxyRouter = t.router({
 		.input(AiProxyDeleteTokenRequestSchema)
 		.mutation(async ({ input, ctx }) => {
 			return await deleteAiProxyTokenService(input, ctx);
+		}),
+
+	updateStatus: t.procedure
+		.input(AiProxyUpdateTokenStatusRequestSchema)
+		.mutation(async ({ input, ctx }) => {
+			return await updateAiProxyTokenStatusService(input, ctx);
 		}),
 });
 

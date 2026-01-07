@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import throttle from "lodash/throttle";
 import { type ReactNode, useEffect, useRef } from "react";
 import { useEnv } from "@/components/provider/env-provider";
@@ -10,6 +10,7 @@ import {
   useLanggraphActions,
   useLanggraphState,
 } from "@/contexts/langgraph/langgraph-context";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useAiProxyContext } from "@/lib/auth/auth-utils";
 import { useCreateAiProxyTokenMutation } from "@/lib/sealos/resources/ai-proxy/ai-proxy-method/ai-proxy-mutation";
 import { listAiProxyTokensOptions } from "@/lib/sealos/resources/ai-proxy/ai-proxy-method/ai-proxy-query";
@@ -35,6 +36,13 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
     (token) => token.name === "brain"
   );
   const createTokenMutation = useCreateAiProxyTokenMutation(aiProxyContext);
+  const { aiProxy } = useTRPCClients();
+  const updateTokenStatusMutation = useMutation(
+    aiProxy.updateStatus.mutationOptions()
+  );
+
+  // Track which token ID we've already updated
+  const updatedTokenIdRef = useRef<number | null>(null);
 
   // Throttle createTokenMutation to fire at most once every 5 seconds
   const throttledCreateToken = useRef(
@@ -56,6 +64,22 @@ function LanggraphConfigInner({ children }: { children: ReactNode }) {
       5000 // 5000ms = 5 seconds
     )
   ).current;
+
+  // Update token status when brainToken is found
+  useEffect(() => {
+    if (
+      brainToken &&
+      updatedTokenIdRef.current !== brainToken.id &&
+      isProduction &&
+      !tokensLoading
+    ) {
+      updatedTokenIdRef.current = brainToken.id;
+      updateTokenStatusMutation.mutate({
+        id: brainToken.id,
+        status: 1,
+      });
+    }
+  }, [brainToken, isProduction, tokensLoading, updateTokenStatusMutation]);
 
   // Handle initial config loading
   useEffect(() => {
