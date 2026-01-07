@@ -1,5 +1,4 @@
-export const QUICK_SHORTCUT_DEFAULT_ICON =
-	"https://sealos.run/logo.svg";
+export const QUICK_SHORTCUT_DEFAULT_ICON = "https://sealos.run/logo.svg";
 
 export const QUICK_SHORTCUT_ICONS: Record<string, string> = {
 	// Database icons (db-appicons)
@@ -11,6 +10,7 @@ export const QUICK_SHORTCUT_ICONS: Record<string, string> = {
 	Milvus: "/icons/db-appicons/milvus.svg",
 
 	// Dev Runtime icons (stacks-appicons)
+	memU: "/icons/stacks-appicons/memu.png",
 	"Next.js": "/icons/stacks-appicons/nextjs.svg",
 	React: "/icons/stacks-appicons/react.svg",
 	Astro: "/icons/stacks-appicons/astro.svg",
@@ -38,4 +38,3 @@ export const QUICK_SHORTCUT_ICONS: Record<string, string> = {
 export function getQuickShortcutIcon(value: string): string {
 	return QUICK_SHORTCUT_ICONS[value] || QUICK_SHORTCUT_DEFAULT_ICON;
 }
-

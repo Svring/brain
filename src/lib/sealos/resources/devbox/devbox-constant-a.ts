@@ -23,6 +23,11 @@ export const DEVBOX_IDE_ICON_MAP: Record<string, string> = {
 	antigravity: "/antigravity.png",
 };
 
+export const DEVBOX_IDE_LABEL_MAP: Record<string, string> = {
+	vscode: "VS Code",
+	vscodeInsiders: "Insiders",
+};
+
 export const DEVBOX_IDE = [
 	"cursor",
 	"antigravity",

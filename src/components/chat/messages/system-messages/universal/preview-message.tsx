@@ -18,6 +18,7 @@ import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 import {
   DEVBOX_IDE,
   DEVBOX_IDE_ICON_MAP,
+  DEVBOX_IDE_LABEL_MAP,
 } from "@/lib/sealos/resources/devbox/devbox-constant-a";
 import { getDevboxSshInfo } from "@/lib/sealos/resources/devbox/devbox-method/devbox-query";
 import { composeSshConnectionUri } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
@@ -41,6 +42,15 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
     }
     // Fall back to the default devbox icon URL
     return `https://devbox.${context.regionUrl}/images/ide/${ide}.svg`;
+  };
+
+  const getIdeDisplayLabel = (ide: string) => {
+    // Check if there's a custom label mapping for this IDE
+    if (DEVBOX_IDE_LABEL_MAP[ide]) {
+      return DEVBOX_IDE_LABEL_MAP[ide];
+    }
+    // Fall back to capitalized version
+    return ide.charAt(0).toUpperCase() + ide.slice(1);
   };
 
   // Extract targets from network type nodes
@@ -397,7 +407,7 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
                   }
                 }}
                 className="flex items-center gap-2 p-2 hover:bg-muted rounded-md border border-border-primary overflow-hidden cursor-pointer"
-                title={`Open ${ide}`}
+                title={`Open ${getIdeDisplayLabel(ide)}`}
               >
                 <Image
                   src={getIdeIconUrl(ide)}
@@ -406,8 +416,8 @@ export const PreviewMessage: React.FC<PreviewMessageProps> = () => {
                   height={20}
                   className="h-5 w-5"
                 />
-                <span className="text-sm font-medium capitalize truncate">
-                  {ide}
+                <span className="text-sm font-medium truncate">
+                  {getIdeDisplayLabel(ide)}
                 </span>
               </button>
             ))}

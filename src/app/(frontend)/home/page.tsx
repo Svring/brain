@@ -550,6 +550,16 @@ export default function HomePage() {
                           className="w-44 rounded-lg"
                         >
                           <DropdownMenuItem
+                            onClick={() => handleDevRuntimeSelect("memU")}
+                          >
+                            <img
+                              src={getQuickShortcutIcon("memU")}
+                              alt="Memu"
+                              className="mr-2 h-4 w-4"
+                            />
+                            Memu
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
                             onClick={() => handleDevRuntimeSelect("Next.js")}
                           >
                             <img
