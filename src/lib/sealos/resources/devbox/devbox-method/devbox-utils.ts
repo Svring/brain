@@ -233,6 +233,7 @@ export const mapRuntimeToEnum = (runtime: string): string => {
 		hugo: "hugo",
 		"spring-boot": "spring-boot",
 		"node.js": "node.js",
+		memu: "memu",
 		// Legacy mappings for backward compatibility
 		"Node.js": "next.js",
 		Python: "python",
