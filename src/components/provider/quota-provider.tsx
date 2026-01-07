@@ -2,7 +2,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
-import { useAuthState } from "@/contexts/auth/auth-context";
 import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 
 interface ResourceValue {
@@ -16,7 +15,6 @@ interface QuotaContextValue {
   memory: ResourceValue | null;
   storage: ResourceValue | null;
   ports: ResourceValue | null;
-  balance: ResourceValue | null;
 
   // Loading states
   isLoading: boolean;
@@ -37,31 +35,14 @@ interface QuotaProviderProps {
 }
 
 export function QuotaProvider({ children }: QuotaProviderProps) {
-  const { auth } = useAuthState();
-  const { k8s, aiProxy } = useTRPCClients();
-
-  const { data: aiProxyTokens } = useQuery({
-    ...aiProxy.list.queryOptions("ai-proxy"),
-    enabled: !!auth?.appToken,
-  });
-
-  const brainToken = aiProxyTokens?.tokens?.find(
-    (token: { name: string; key: string }) => token.name === "brain"
-  );
-
-  const apiKey = brainToken ? `sk-${brainToken.key}` : undefined;
-
-  const { data: billingQuota, isLoading: balanceLoading } = useQuery({
-    ...aiProxy.billingQuota.queryOptions({ apiToken: apiKey || "" }),
-    enabled: !!apiKey,
-  });
+  const { k8s } = useTRPCClients();
 
   // Fetch resource quota data
   const { data: resourceQuota, isLoading: isResourceQuotaLoading } = useQuery({
     ...k8s.resourceQuota.queryOptions(),
   });
 
-  const isLoading = balanceLoading || isResourceQuotaLoading;
+  const isLoading = isResourceQuotaLoading;
 
   // Transform data to simplified format
   const cpu = resourceQuota
@@ -92,20 +73,12 @@ export function QuotaProvider({ children }: QuotaProviderProps) {
       }
     : null;
 
-  const balance = billingQuota
-    ? {
-        used: billingQuota.remain,
-        limit: billingQuota.total,
-      }
-    : null;
-
   const value: QuotaContextValue = {
     // Resource data
     cpu,
     memory,
     storage,
     ports,
-    balance,
 
     // Loading states
     isLoading,
