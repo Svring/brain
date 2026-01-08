@@ -8,6 +8,7 @@ const MODULE_NOT_FOUND_WARNING = /Module not found: Can't resolve/;
 /** @type {import('next').NextConfig} */
 const nextConfig = {
 	reactStrictMode: false,
+	output: "standalone",
 	typescript: {
 		// Dangerously allow production builds to complete even if type errors exist.
 		ignoreBuildErrors: true,
