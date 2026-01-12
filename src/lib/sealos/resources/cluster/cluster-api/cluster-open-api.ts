@@ -124,10 +124,7 @@ export const createCluster = createParallelAction(
  * ```
  */
 export const getCluster = createParallelAction(
-	async (
-		clusterName: string,
-		context: ClusterApiContext,
-	): Promise<GetClusterResponse> => {
+	async (clusterName: string, context: ClusterApiContext) => {
 		const api = createClusterApi(context);
 		const response = await api.get(`/database/${clusterName}`);
 		return response.data.data;
@@ -222,7 +219,7 @@ export const deleteCluster = createParallelAction(
 			);
 		}
 
-		return DeleteClusterResponseSchema.parse(response.data);
+		return response.data;
 	},
 );
 
@@ -259,7 +256,7 @@ export const startCluster = createParallelAction(
 			);
 		}
 
-		return StartClusterResponseSchema.parse(response.data);
+		return response.data;
 	},
 );
 
@@ -293,7 +290,7 @@ export const pauseCluster = createParallelAction(
 			);
 		}
 
-		return PauseClusterResponseSchema.parse(response.data);
+		return response.data;
 	},
 );
 
@@ -330,7 +327,7 @@ export const restartCluster = createParallelAction(
 			);
 		}
 
-		return RestartClusterResponseSchema.parse(response.data);
+		return response.data;
 	},
 );
 
