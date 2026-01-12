@@ -4,18 +4,18 @@ import type { Edge, Node } from "@xyflow/react";
 import { useEffect, useMemo } from "react";
 import { useFlowgraphActions } from "@/contexts/flowgraph/flowgraph-context";
 import {
-	useProjectActions,
-	useProjectState,
+  useProjectActions,
+  useProjectState,
 } from "@/contexts/project/project-context";
 import { useResourceObjects } from "@/hooks/sealos/resource/use-resource-objects";
 import type { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
 import {
-	applyLayout,
-	convertObjectsToNodes,
-	convertReliancesToEdges,
-	createDevGroup,
-	deriveNetworkNodesAndEdges,
-	inferObjectsReliances,
+  applyLayout,
+  convertObjectsToNodes,
+  convertReliancesToEdges,
+  createDevGroup,
+  deriveNetworkNodesAndEdges,
+  inferObjectsReliances,
 } from "./flowgraph-utils";
 
 /**
@@ -24,97 +24,113 @@ import {
  * @returns Object containing nodes, loading state, and error state
  */
 export const useFlowgraphNodes = (targets: ResourceTarget[]) => {
-	// Fetch resource objects for the given targets
-	const resourceObjectsQuery = useResourceObjects(targets);
-	const { setSelectedProjectResources } = useProjectActions();
-	const { selectedProject } = useProjectState();
-	const { setNodes, setEdges, fitView } = useFlowgraphActions();
+  // Fetch resource objects for the given targets
+  const resourceObjectsQuery = useResourceObjects(targets);
+  const { setSelectedProjectResources } = useProjectActions();
+  const { selectedProject } = useProjectState();
+  const { setNodes, setEdges, fitView } = useFlowgraphActions();
 
-	// Memoize the computation of nodes and edges
-	const { nodes, edges } = useMemo(() => {
-		// Return empty arrays if still loading or no data
-		if (resourceObjectsQuery.isLoading || !resourceObjectsQuery.data) {
-			return {
-				nodes: [],
-				edges: [],
-			};
-		}
+  // Memoize the computation of nodes and edges
+  const { nodes, edges } = useMemo(() => {
+    // Return empty arrays if still loading or no data
+    if (resourceObjectsQuery.isLoading || !resourceObjectsQuery.data) {
+      return {
+        nodes: [],
+        edges: [],
+      };
+    }
 
-		// Extract resource objects from the query results
-		const objects = resourceObjectsQuery.data;
+    // Extract resource objects from the query results
+    const objects = resourceObjectsQuery.data;
 
-		// console.log("objects", objects);
+    // console.log("objects", objects);
 
-		// Pass objects to the utility functions
-		const baseNodes = convertObjectsToNodes(objects);
+    // Pass objects to the utility functions
+    const baseNodes = convertObjectsToNodes(objects);
 
-		const reliances = inferObjectsReliances(objects);
+    const reliances = inferObjectsReliances(objects);
 
-		// Convert reliances to edges
-		const baseEdges = convertReliancesToEdges(reliances, objects);
+    // Convert reliances to edges
+    const baseEdges = convertReliancesToEdges(reliances, objects);
 
-		// Derive network nodes and edges from the base nodes
-		const { nodes: networkNodes, edges: networkEdges } =
-			deriveNetworkNodesAndEdges(objects);
+    // Derive network nodes and edges from the base nodes
+    const { nodes: networkNodes, edges: networkEdges } =
+      deriveNetworkNodesAndEdges(objects);
 
-		// Merge base nodes and network nodes
-		const mergedNodes = [...baseNodes, ...networkNodes];
+    // Merge base nodes and network nodes
+    const mergedNodes = [...baseNodes, ...networkNodes];
 
-		// Combine all edges for layout calculation
-		const allEdges = [...(baseEdges || []), ...(networkEdges || [])];
+    // Combine all edges for layout calculation
+    const allEdges = [...(baseEdges || []), ...(networkEdges || [])];
 
-		// Apply devbox grouping to merged nodes with edges
-		const groupedNodes = createDevGroup(mergedNodes, allEdges);
+    // Apply devbox grouping to merged nodes with edges
+    const groupedNodes = createDevGroup(mergedNodes, allEdges);
 
-		// Apply layout to the grouped nodes
-		const layoutedNodes = applyLayout(groupedNodes, allEdges);
+    // Apply layout to the grouped nodes
+    const layoutedNodes = applyLayout(groupedNodes, allEdges);
 
-		return {
-			nodes: layoutedNodes,
-			edges: allEdges,
-		};
-	}, [resourceObjectsQuery.data]);
+    return {
+      nodes: layoutedNodes,
+      edges: allEdges,
+    };
+  }, [resourceObjectsQuery.data]);
 
-	// Set nodes and edges in flowgraph context after computation
-	useEffect(() => {
-		if (nodes.length > 0 || edges.length > 0) {
-			setNodes(nodes);
-			setEdges(edges);
-		}
-	}, [nodes, edges]);
+  // Set nodes and edges in flowgraph context after computation
+  useEffect(() => {
+    if (nodes.length > 0 || edges.length > 0) {
+      setNodes(nodes);
+      setEdges(edges);
+    }
+  }, [nodes, edges]);
 
-	// Set selected project resources when data is available
-	useEffect(() => {
-		if (resourceObjectsQuery.data && !resourceObjectsQuery.isLoading) {
-			setSelectedProjectResources(
-				resourceObjectsQuery.data.map((object) => ({
-					kind: object.kind.toLowerCase(),
-					name: object.name,
-				})),
-			);
-		}
-	}, [
-		resourceObjectsQuery.data,
-		resourceObjectsQuery.isLoading,
-		selectedProject,
-	]);
+  // Set selected project resources when data is available
+  useEffect(() => {
+    if (resourceObjectsQuery.data && !resourceObjectsQuery.isLoading) {
+      setSelectedProjectResources(
+        resourceObjectsQuery.data
+          .filter(
+            (object) =>
+              object != null &&
+              object !== undefined &&
+              object.kind &&
+              object.name
+          )
+          .map((object) => {
+            if (!object || !object.kind || !object.name) {
+              return null;
+            }
+            return {
+              kind: object.kind.toLowerCase(),
+              name: object.name,
+            };
+          })
+          .filter(
+            (item): item is { kind: string; name: string } => item !== null
+          )
+      );
+    }
+  }, [
+    resourceObjectsQuery.data,
+    resourceObjectsQuery.isLoading,
+    selectedProject,
+  ]);
 
-	// Fit view to show all resources when project resources change
-	useEffect(() => {
-		if (resourceObjectsQuery.data && resourceObjectsQuery.data.length > 0) {
-			fitView();
-		}
-	}, [resourceObjectsQuery.data?.length]);
+  // Fit view to show all resources when project resources change
+  useEffect(() => {
+    if (resourceObjectsQuery.data && resourceObjectsQuery.data.length > 0) {
+      fitView();
+    }
+  }, [resourceObjectsQuery.data?.length]);
 
-	// console.log("resourceObjectsQuery.data", resourceObjectsQuery.data);
+  // console.log("resourceObjectsQuery.data", resourceObjectsQuery.data);
 
-	return {
-		nodes,
-		edges,
-		isLoading: resourceObjectsQuery.isLoading,
-		isPending: resourceObjectsQuery.pending,
-		error: resourceObjectsQuery.error,
-		// Expose the raw resource objects query for additional data if needed
-		resourceObjectsQuery,
-	};
+  return {
+    nodes,
+    edges,
+    isLoading: resourceObjectsQuery.isLoading,
+    isPending: resourceObjectsQuery.pending,
+    error: resourceObjectsQuery.error,
+    // Expose the raw resource objects query for additional data if needed
+    resourceObjectsQuery,
+  };
 };
