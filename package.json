@@ -5,12 +5,10 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "million-dev": "next dev",
-    "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "tag-image": "docker tag $IMAGEID puddlecat/sealos-brain-frontend:$VERSION",
-    "build-image": "docker build --platform linux/amd64 -t puddlecat/sealos-brain-frontend:$VERSION .",
-    "push-image": "docker push puddlecat/sealos-brain-frontend:$VERSION"
+    "build": "docker build --platform linux/amd64 -t puddlecat/sealos-brain-ui:latest .",
+    "push": "docker push puddlecat/sealos-brain-ui:latest"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.864.0",
