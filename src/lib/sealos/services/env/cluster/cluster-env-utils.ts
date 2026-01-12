@@ -19,7 +19,7 @@ export const deriveClusterEnvVariable = (name: string, type: string): Env[] => {
 					? `${name}-broker-account-admin`
 					: `${name}-conn-credential`; // fallback to old format
 
-	const secretKeys = ["port", "host", "password", "username"];
+	const secretKeys = ["password", "username"];
 
 	return secretKeys.map((key) => ({
 		name: `${name.toUpperCase()}_${key.toUpperCase()}`,
