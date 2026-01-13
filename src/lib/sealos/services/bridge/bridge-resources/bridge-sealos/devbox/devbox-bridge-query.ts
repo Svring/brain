@@ -111,7 +111,5 @@ export const getDevboxObject = async (
 		devboxObject.ssh.port = 2233;
 	}
 
-	console.log("devboxObject", devboxObject);
-
 	return DevboxObjectSchema.parse(devboxObject);
 };

@@ -59,6 +59,23 @@ function createClusterApi(context: ClusterApiContext) {
 	});
 }
 
+// Helper to create axios instance for v2alpha API
+function createClusterApiV2(context: ClusterApiContext) {
+	const isDevelopment = process.env.NEXT_PUBLIC_MODE === "development";
+	return axios.create({
+		baseURL: `http://dbprovider.${context.baseUrl}/api/v2alpha`,
+		headers: {
+			"Content-Type": "application/json",
+			...(context.authorization
+				? { Authorization: context.authorization }
+				: {}),
+		},
+		httpsAgent: isDevelopment
+			? new https.Agent({ rejectUnauthorized: false })
+			: undefined,
+	});
+}
+
 // Cluster Management Functions
 
 /**
@@ -97,7 +114,36 @@ export const createCluster = createParallelAction(
 		// Parse with form schema to get defaults
 		const formData = clusterCreateFormSchema.parse(request);
 		const api = createClusterApi(context);
-		const response = await api.post("/database", formData);
+		const apiV2 = createClusterApiV2(context);
+
+		// Map resource fields to quota for v2alpha API
+		const v2FormData = {
+			name: formData.name,
+			type: formData.type,
+			version: formData.version,
+			terminationPolicy: formData.terminationPolicy,
+			quota: {
+				cpu: formData.resource.cpu,
+				memory: formData.resource.memory,
+				storage: formData.resource.storage ?? 1, // Default to 1 if not provided
+				replicas: formData.resource.replicas,
+			},
+		};
+
+		// Call both v1 and v2alpha APIs in parallel
+		const [v1Response, v2Response] = await Promise.allSettled([
+			api.post("/database", formData),
+			apiV2.post("/database", v2FormData),
+		]);
+
+		// Get v1 response (required)
+		if (v1Response.status === "rejected") {
+			throw new Error(
+				`Failed to create cluster from v1 API: ${v1Response.reason}`,
+			);
+		}
+
+		const response = v1Response.value;
 
 		// Check if response code is not 200-299 range
 		if (response.data.code < 200 || response.data.code >= 300) {
@@ -105,6 +151,16 @@ export const createCluster = createParallelAction(
 				`Failed to create cluster: ${
 					response.data.message || `HTTP ${response.data.code}`
 				}`,
+			);
+		}
+
+		// Log v2 response for debugging (v2alpha might not return response immediately)
+		if (v2Response.status === "fulfilled") {
+			console.log("v2alpha create cluster response:", v2Response.value.data);
+		} else {
+			console.warn(
+				"v2alpha create cluster failed (non-critical):",
+				v2Response.reason,
 			);
 		}
 
@@ -126,8 +182,52 @@ export const createCluster = createParallelAction(
 export const getCluster = createParallelAction(
 	async (clusterName: string, context: ClusterApiContext) => {
 		const api = createClusterApi(context);
-		const response = await api.get(`/database/${clusterName}`);
-		return response.data.data;
+		const apiV2 = createClusterApiV2(context);
+
+		// Fetch from both v1 and v2alpha APIs in parallel
+		const [v1Response, v2Response] = await Promise.allSettled([
+			api.get(`/database/${clusterName}`),
+			apiV2.get(`/database/${clusterName}`),
+		]);
+
+		// Get v1 data (required)
+		if (v1Response.status === "rejected") {
+			throw new Error(
+				`Failed to fetch cluster from v1 API: ${v1Response.reason}`,
+			);
+		}
+		const clusterData = v1Response.value.data.data;
+
+		// Merge v2 data if available
+		// v2alpha API returns data directly (not wrapped like v1)
+		if (v2Response.status === "fulfilled" && v2Response.value.data) {
+			const v2Data = v2Response.value.data;
+			console.log("v2Data", v2Data);
+
+			// Overwrite name, type, version, and status from v2 response
+			if (v2Data.name !== undefined) {
+				clusterData.name = v2Data.name;
+			}
+			if (v2Data.type !== undefined) {
+				clusterData.type = v2Data.type;
+			}
+			if (v2Data.version !== undefined) {
+				clusterData.version = v2Data.version;
+			}
+			if (v2Data.status !== undefined) {
+				clusterData.status = v2Data.status;
+			}
+
+			// Overwrite connection data from v2 response
+			if (v2Data.connection) {
+				clusterData.connection = {
+					privateConnection: v2Data.connection.privateConnection || null,
+					publicConnection: v2Data.connection.publicConnection || null,
+				};
+			}
+		}
+
+		return clusterData;
 	},
 );
 

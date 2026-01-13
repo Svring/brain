@@ -1,20 +1,14 @@
 "use client";
 
-import React from "react";
-import { EthernetPort, Copy, Check, Globe, Lock } from "lucide-react";
-import { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { useAuthState } from "@/contexts/auth/auth-context";
-import { useCopy } from "@/hooks/use-copy";
-import { ClusterObjectSchema } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
-import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { Check, Copy, EthernetPort, Globe, Lock } from "lucide-react";
+import type React from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  composeClusterPublicConnectionString,
-  composeClusterPrivateConnectionString,
-} from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
-import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
 import { useClusterPublicAccess } from "@/hooks/sealos/cluster/use-cluster-public-access";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import { useCopy } from "@/hooks/use-copy";
+import type { CustomResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { ClusterObjectSchema } from "@/lib/sealos/resources/cluster/cluster-schemas/cluster-object-schema";
 
 interface ConnectSectionProps {
   target: CustomResourceTarget;
@@ -25,14 +19,11 @@ interface ConnectSectionProps {
 export const ConnectPopoverContent: React.FC<{
   target: CustomResourceTarget;
 }> = ({ target }) => {
-  const { auth } = useAuthState();
   const { copyToClipboard, isCopied } = useCopy();
   const { resource: clusterResource } = useResourceStatus(target);
   const { enablePublic, disablePublic, isPending } =
     useClusterPublicAccess(target);
 
-  const namespace = auth?.namespace;
-  const regionUrl = auth?.regionUrl;
   const parsedClusterObject = clusterResource
     ? ClusterObjectSchema.parse(clusterResource)
     : null;
@@ -47,22 +38,16 @@ export const ConnectPopoverContent: React.FC<{
     );
   }
 
-  const publicConnectionString = composeClusterPublicConnectionString(
-    parsedClusterObject,
-    namespace || ""
-  );
+  // Read connection strings directly from parsedClusterObject (from v2alpha API)
+  const privateConnectionString =
+    parsedClusterObject.connection?.privateConnection?.connectionString || null;
 
-  const privateConnectionString = composeClusterPrivateConnectionString(
-    parsedClusterObject,
-    namespace || ""
-  );
+  const publicConnectionString =
+    parsedClusterObject.connection?.publicConnection || null;
 
   // Check if public access is available
   const publicConnection = parsedClusterObject.connection?.publicConnection;
-  const hasPublicAccess =
-    publicConnection &&
-    !Array.isArray(publicConnection) &&
-    publicConnection.port != null;
+  const hasPublicAccess = publicConnection && !Array.isArray(publicConnection);
 
   const handlePublicAccessToggle = async (enabled: boolean) => {
     if (enabled) {

@@ -14,7 +14,7 @@ export const deriveClusterEnvVariable = (name: string, type: string): Env[] => {
 		type === "mongodb"
 			? `${name}-mongodb-account-root`
 			: type === "redis"
-				? `${name}-redis-account-default`
+				? `${name}-redis-redis-account-default`
 				: type === "kafka"
 					? `${name}-broker-account-admin`
 					: `${name}-conn-credential`; // fallback to old format

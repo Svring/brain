@@ -1,11 +1,13 @@
 "use client";
 
-import { Trash2, AlertCircleIcon, PencilLine, Package } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { AlertCircleIcon, Package, PencilLine, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import type { z } from "zod";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,6 +17,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { AvatarCircles } from "@/components/ui/avatar-circles";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -23,21 +27,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { toast } from "sonner";
-import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
-import { useMutation } from "@tanstack/react-query";
-import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
-import { ProjectObjectSchema } from "@/lib/brain/resources/project/project-schemas/project-object-schema";
-import { z } from "zod";
-import useProjectResources from "@/hooks/brain/use-project-resources";
-import { AvatarCircles } from "@/components/ui/avatar-circles";
-import { getResourceDefaultIcon } from "@/lib/sealos/sealos-utils";
-import { useProjectRename } from "@/hooks/brain/use-project-rename";
+import { Input } from "@/components/ui/input";
 import { useAuthState } from "@/contexts/auth/auth-context";
-import { getDevboxRuntimeIconUrl } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
-import { getClusterIconUrl } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
 import { useProjectLifecycle } from "@/hooks/brain/use-project-lifecycle";
+import { useProjectRename } from "@/hooks/brain/use-project-rename";
+import useProjectResources from "@/hooks/brain/use-project-resources";
+import { useInvalidateQueries } from "@/hooks/trpc/use-invalidate-queries";
+import { useTRPCClients } from "@/hooks/trpc/use-trpc-clients";
+import type { ProjectObjectSchema } from "@/lib/brain/resources/project/project-schemas/project-object-schema";
+import { CLUSTER_TYPES } from "@/lib/sealos/resources/cluster/cluster-constant/cluster-constant-types";
+import { getClusterIconUrl } from "@/lib/sealos/resources/cluster/cluster-method/cluster-utils";
+import { getDevboxRuntimeIconUrl } from "@/lib/sealos/resources/devbox/devbox-method/devbox-utils";
+import { getResourceDefaultIcon } from "@/lib/sealos/sealos-utils";
 
 interface ProjectCardProps {
   project: z.infer<typeof ProjectObjectSchema>;
@@ -96,6 +97,33 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       return acc;
     }, {} as Record<string, any[]>);
 
+    // For clusters, find the most common cluster type across all cluster resources
+    const clusterResources = resources.filter(
+      (resource) => resource.kind?.toLowerCase() === "cluster"
+    );
+    const clusterTypeCounts: Record<string, number> = {};
+
+    clusterResources.forEach((resource) => {
+      // Convert entire resource definition to string for matching
+      const resourceString = JSON.stringify(resource).toLowerCase();
+
+      // Check each cluster type constant against the entire resource string
+      CLUSTER_TYPES.forEach((clusterType) => {
+        if (resourceString.includes(clusterType)) {
+          clusterTypeCounts[clusterType] =
+            (clusterTypeCounts[clusterType] || 0) + 1;
+        }
+      });
+    });
+
+    // Find the most common cluster type
+    const mostCommonClusterType =
+      Object.keys(clusterTypeCounts).length > 0
+        ? Object.entries(clusterTypeCounts).reduce((a, b) =>
+            clusterTypeCounts[a[0]] > clusterTypeCounts[b[0]] ? a : b
+          )[0]
+        : null;
+
     // Generate icons for each resource
     const allIcons = resources
       .map((resource) => {
@@ -108,8 +136,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             return getDevboxRuntimeIconUrl(image, auth.regionUrl);
           }
         } else if (kind === "cluster") {
-          // Get cluster type and use cluster icon function
-          const type = resource.spec?.clusterDefinitionRef;
+          // Use the most common cluster type for icon, or fallback to resource type
+          const type =
+            mostCommonClusterType ||
+            resource.type ||
+            resource.spec?.type ||
+            resource.spec?.clusterDefinitionRef;
           if (type) {
             return getClusterIconUrl(type);
           }
@@ -148,7 +180,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               iconUrl = getDevboxRuntimeIconUrl(image, auth.regionUrl);
             }
           } else if (kind === "cluster") {
-            const type = resource.spec?.clusterDefinitionRef;
+            // Use the most common cluster type for icon, or fallback to resource type
+            const type =
+              mostCommonClusterType ||
+              resource.type ||
+              resource.spec?.type ||
+              resource.spec?.clusterDefinitionRef;
             if (type) {
               iconUrl = getClusterIconUrl(type);
             }

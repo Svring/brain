@@ -1,16 +1,16 @@
-import React from "react";
 import { Square } from "lucide-react";
-import type { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
-import { usePodEvents } from "@/hooks/sealos/pod/use-pod-events";
-import { usePods } from "@/hooks/sealos/pod/use-pods";
-import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
-import { useAnalyzeStatus } from "@/hooks/copilot/use-analyze-status";
-import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
+import React from "react";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useAnalyzeStatus } from "@/hooks/copilot/use-analyze-status";
+import { usePodEvents } from "@/hooks/sealos/pod/use-pod-events";
+import { usePods } from "@/hooks/sealos/pod/use-pods";
+import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
+import type { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { convertResourceTypeToTarget } from "@/lib/k8s/k8s-method/k8s-utils";
 
 interface NodeStatusLightProps {
   target: ResourceTarget;
@@ -36,26 +36,29 @@ export default function NodeStatus({ target }: NodeStatusLightProps) {
   // Get status analysis hook
   const { analyzeStatus, isStatusReady } = useAnalyzeStatus(target);
 
-  // Map status to colors
+  // Map status to colors (using lowercase keys for comparison)
   const statusColors: { [key: string]: string } = {
-    Running: "fill-theme-green text-theme-green",
-    Stopped: "fill-theme-purple text-theme-purple",
-    Stopping: "fill-theme-purple text-theme-purple",
-    Shutdown: "fill-theme-purple text-theme-purple",
-    Error: "fill-theme-red text-theme-red",
-    Abnormal: "fill-theme-red text-theme-red",
-    Deleting: "fill-theme-yellow text-theme-yellow",
-    Restarting: "fill-theme-yellow text-theme-yellow",
-    Pending: "fill-theme-gray text-theme-gray",
+    running: "fill-theme-green text-theme-green",
+    stopped: "fill-theme-purple text-theme-purple",
+    stopping: "fill-theme-purple text-theme-purple",
+    shutdown: "fill-theme-purple text-theme-purple",
+    error: "fill-theme-red text-theme-red",
+    abnormal: "fill-theme-red text-theme-red",
+    deleting: "fill-theme-yellow text-theme-yellow",
+    restarting: "fill-theme-yellow text-theme-yellow",
+    pending: "fill-theme-gray text-theme-gray",
   };
 
+  const normalizedStatus = (status || "Pending").toLowerCase();
   const colorClass =
-    statusColors[status || "Pending"] || "fill-theme-gray text-theme-gray";
+    statusColors[normalizedStatus] || "fill-theme-gray text-theme-gray";
   const displayStatus =
-    (status || "Pending") === "Stopping" ? "Pausing" : status || "Pending";
+    normalizedStatus === "stopping"
+      ? "Pausing"
+      : normalizedStatus.charAt(0).toUpperCase() + normalizedStatus.slice(1);
 
-  const isRunning = (status || "Pending") === "Running";
-  const isPending = (status || "Pending") === "Pending";
+  const isRunning = normalizedStatus === "running";
+  const isPending = normalizedStatus === "pending";
 
   return (
     <Tooltip>
