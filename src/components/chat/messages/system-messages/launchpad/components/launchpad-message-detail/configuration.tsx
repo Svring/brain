@@ -27,14 +27,19 @@ export const Configuration: React.FC<ConfigurationProps> = ({
     let updateData: any = {};
 
     switch (fieldType) {
-      case "commandArgs":
+      case "commandArgs": {
+        // Ensure launchCommand is always sent, even when both fields are empty
+        // This prevents the form from resetting all fields when clearing command/args
+        const commandValue = data.launchCommand?.command ?? "";
+        const argsValue = data.launchCommand?.args ?? "";
         updateData = {
           launchCommand: {
-            command: data.launchCommand?.command,
-            args: data.launchCommand?.args,
+            command: commandValue,
+            args: argsValue,
           },
         };
         break;
+      }
       case "env":
         // Use dialog-provided env as the source of truth; filter invalid entries
         updateData = {

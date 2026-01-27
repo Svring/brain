@@ -87,8 +87,13 @@ export const LaunchpadUpdateForm = ({
             }
           }
         } else {
-          // For objects, only include if they have properties
-          if (typeof value === "object" && Object.keys(value).length > 0) {
+          // Special handling for launchCommand - always include even if both values are empty
+          // This allows clearing command/args without resetting other fields
+          if (key === "launchCommand" && typeof value === "object") {
+            (acc as any)[key] = value;
+          }
+          // For other objects, only include if they have properties
+          else if (typeof value === "object" && Object.keys(value).length > 0) {
             (acc as any)[key] = value;
           } else if (typeof value !== "object") {
             // For primitives, include if they have a value

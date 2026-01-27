@@ -289,6 +289,13 @@ export const openCostCenterApp = () => {
 	});
 };
 
+export const openWorkorder = () => {
+	createSealosApp();
+	sealosApp.runEvents("openDesktopApp", {
+		appKey: "system-workorder",
+	});
+};
+
 export const requestLogin = ({
 	pathname,
 	query,
