@@ -38,6 +38,7 @@ export const DEVBOX_RUNTIMES = [
 	"spring-boot",
 	"node.js",
 	"memu",
+	"openclaw",
 ] as const;
 
 export type DevboxRuntime = (typeof DEVBOX_RUNTIMES)[number];

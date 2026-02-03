@@ -1,7 +1,4 @@
-import {
-	DEVBOX_RUNTIMES,
-	type DevboxRuntime,
-} from "./devbox-constant-runtimes";
+import type { DevboxRuntime } from "./devbox-constant-runtimes";
 
 export const DEVBOX_DEFAULT_ICON = "https://devbox.bja.sealos.run/logo.svg";
 
@@ -50,4 +47,5 @@ export const DEVBOX_RUNTIME_ICONS: Record<DevboxRuntime, string> = {
 	"spring-boot": "https://devbox.bja.sealos.run/images/runtime/spring-boot.svg",
 	"node.js": "https://devbox.bja.sealos.run/images/runtime/node.js.svg",
 	memu: "https://memu.pro/static/logo.png",
+	openclaw: "https://openclaw.ai/favicon.svg",
 };

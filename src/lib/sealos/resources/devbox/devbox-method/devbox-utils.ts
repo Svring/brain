@@ -4,7 +4,6 @@ import {
 	DEVBOX_DEFAULT_ICON,
 	DEVBOX_RUNTIME_ICONS,
 } from "@/lib/sealos/resources/devbox/devbox-constant/devbox-constant-icons";
-import type { SSHConfig } from "@/lib/sealos/resources/devbox/devbox-schemas/devbox-object-query-schema";
 
 /**
  * Generates a random string of lowercase alphabets
@@ -161,7 +160,7 @@ export const generateDevboxName = (prefix: string = "devbox"): string => {
  */
 export const getDevboxRuntimeIconUrl = (
 	image: string,
-	regionUrl: string,
+	_regionUrl: string,
 ): string => {
 	// If image contains 'claude-code', map directly from runtime icon constants
 	if (image.includes("claude-code")) {
@@ -234,6 +233,8 @@ export const mapRuntimeToEnum = (runtime: string): string => {
 		"spring-boot": "spring-boot",
 		"node.js": "node.js",
 		memu: "memu",
+		openclaw: "openclaw",
+		clawdbot: "openclaw",
 		// Legacy mappings for backward compatibility
 		"Node.js": "next.js",
 		Python: "python",
