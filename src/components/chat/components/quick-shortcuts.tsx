@@ -21,6 +21,10 @@ const shortcuts = [
 		content: "Give me a cloud dev environment with claude code.",
 	},
 	{
+		label: "Openclaw (clawdbot)",
+		content: "Give me a cloud dev environment with Openclaw(clawdbot).",
+	},
+	{
 		label: "Build full-stack application",
 		content:
 			"I want to create a full-stack application using Next.js and database.",
