@@ -10,6 +10,8 @@ export interface Auth {
   appToken: string;
   baseUrl?: string;
   apiKey?: string;
+  planName?: string;
+  expireAt?: string;
 }
 
 export interface AuthContext {

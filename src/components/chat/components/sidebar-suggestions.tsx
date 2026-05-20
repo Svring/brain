@@ -8,6 +8,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
 import { statelessRunWait } from "@/lib/langgraph/langgraph-api/langgraph-api-service";
+import { langgraphAuthFields } from "@/lib/langgraph/langgraph-run-input";
 
 interface SidebarSuggestionsProps {
   onSuggestionClick?: (suggestion: string) => void;
@@ -74,6 +75,7 @@ export default function SidebarSuggestions({
                 api_key: apiKey,
                 base_url: baseUrl,
                 model_name: modelName,
+                ...langgraphAuthFields(auth),
                 stage: "suggestion",
               },
             },

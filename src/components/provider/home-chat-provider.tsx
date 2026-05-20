@@ -11,6 +11,7 @@ import React, {
 } from "react";
 import { useAuthState } from "@/contexts/auth/auth-context";
 import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
+import { langgraphAuthFields } from "@/lib/langgraph/langgraph-run-input";
 import { useEnv } from "./env-provider";
 import { useThreads } from "./thread-provider";
 
@@ -98,8 +99,7 @@ export function HomeChatProvider({
         api_key: apiKey,
         base_url: baseUrl,
         model_name: modelName,
-        region_url: auth?.regionUrl,
-        kubeconfig: auth?.kubeconfig,
+        ...langgraphAuthFields(auth),
         stage: "propose_project",
         messages: data.newMessages,
         ...data,

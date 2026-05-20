@@ -22,6 +22,7 @@ import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useResourceStatus } from "@/hooks/sealos/resource/use-resource-status";
 import type { ResourceTarget } from "@/lib/k8s/k8s-api/k8s-api-schemas/req-res-schemas/req-target-schemas";
+import { langgraphAuthFields } from "@/lib/langgraph/langgraph-run-input";
 import { useEnv } from "./env-provider";
 import { useThreads } from "./thread-provider";
 
@@ -189,8 +190,7 @@ export function ProjectChatInstanceProvider({
         base_url: baseUrl,
         model_name: modelName,
         context_window_usage: contextWindowUsage,
-        region_url: auth?.regionUrl,
-        kubeconfig: auth?.kubeconfig,
+        ...langgraphAuthFields(auth),
         stage: stage,
         project_context: {
           selectedProject,
@@ -527,8 +527,7 @@ export function ResourceChatInstanceProvider({
         base_url: baseUrl,
         model_name: modelName,
         context_window_usage: contextWindowUsage,
-        region_url: auth?.regionUrl,
-        kubeconfig: auth?.kubeconfig,
+        ...langgraphAuthFields(auth),
         stage: stage,
         project_context: {
           selectedProject,
