@@ -8,6 +8,7 @@ import { createContext, use, useCallback, useState } from "react";
 import { useEnv } from "@/components/provider/env-provider";
 import { requestLogin } from "@/lib/auth/auth-utils";
 import { createThread } from "@/lib/langgraph/langgraph-api/langgraph-api-service";
+import { langgraphAuthFields } from "@/lib/langgraph/langgraph-run-input";
 import { useAuthState } from "../auth/auth-context";
 import { useEnvState } from "../env/env.context";
 
@@ -99,6 +100,7 @@ export function CopilotTrialAdapter({
         {
           stage: "deploy_project",
           trial: true,
+          ...langgraphAuthFields(auth),
           messages: data.newMessages,
         },
         {

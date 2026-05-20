@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
 import { useProjectState } from "@/contexts/project/project-context";
 import { useThreads } from "@/components/provider/thread-provider";
+import { useAuthState } from "@/contexts/auth/auth-context";
+import { langgraphAuthFields } from "@/lib/langgraph/langgraph-run-input";
 
 interface UseLanggraphStateUpdateProps {
   threadId: string;
@@ -20,6 +22,7 @@ export function useLanggraphStateUpdate({
     selectedResourceContext,
   } = useProjectState();
   const { updateThreadState } = useThreads();
+  const { auth } = useAuthState();
 
   useEffect(() => {
     if (apiKey && baseUrl && modelName && stage) {
@@ -29,6 +32,7 @@ export function useLanggraphStateUpdate({
           api_key: apiKey,
           base_url: baseUrl,
           model_name: modelName,
+          ...langgraphAuthFields(auth),
           stage: stage,
           project_context: {
             selectedProject,
@@ -54,5 +58,6 @@ export function useLanggraphStateUpdate({
     selectedProjectResources,
     selectedResource,
     selectedResourceContext,
+    auth,
   ]);
 }

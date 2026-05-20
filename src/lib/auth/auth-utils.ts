@@ -50,11 +50,16 @@ export async function extractAuthFromSession(
 		return null;
 	}
 
+	const subscription =
+		session?.subscription ?? session?.state?.session?.subscription;
+
 	return {
 		namespace,
 		kubeconfig: encodeURIComponent(session.kubeconfig),
 		regionUrl,
 		appToken: session.token, // 使用动态获取的token
+		planName: subscription?.PlanName,
+		expireAt: subscription?.ExpireAt,
 	};
 }
 

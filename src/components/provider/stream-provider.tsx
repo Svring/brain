@@ -12,6 +12,7 @@ import { useAuthState } from "@/contexts/auth/auth-context";
 import { useLanggraphState } from "@/contexts/langgraph/langgraph-context";
 import { useProjectState } from "@/contexts/project/project-context";
 import { getThreadState } from "@/lib/langgraph/langgraph-api/langgraph-api-service";
+import { langgraphAuthFields } from "@/lib/langgraph/langgraph-run-input";
 import { useEnv } from "./env-provider";
 import { useThreads } from "./thread-provider";
 
@@ -95,8 +96,7 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
         base_url: baseUrl,
         model_name: modelName,
         context_window_usage: contextWindowUsage,
-        region_url: auth?.regionUrl,
-        kubeconfig: auth?.kubeconfig,
+        ...langgraphAuthFields(auth),
         stage: finalStage,
         project_context: {
           selectedProject,
@@ -124,8 +124,7 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
         base_url: baseUrl,
         model_name: modelName,
         context_window_usage: contextWindowUsage,
-        region_url: auth?.regionUrl,
-        kubeconfig: auth?.kubeconfig,
+        ...langgraphAuthFields(auth),
         stage,
       },
     };
@@ -170,8 +169,7 @@ const StreamSession = ({ children }: { children: ReactNode }) => {
         base_url: baseUrl,
         model_name: modelName,
         context_window_usage: contextWindowUsage,
-        region_url: auth?.regionUrl,
-        kubeconfig: auth?.kubeconfig,
+        ...langgraphAuthFields(auth),
         stage,
         project_context: {
           selectedProject,

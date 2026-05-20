@@ -18,8 +18,8 @@
 FROM node:22-slim AS builder
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm
+# pnpm version comes from package.json "packageManager" (Corepack)
+RUN corepack enable
 
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
