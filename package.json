@@ -9,8 +9,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "build-image": "docker build --platform linux/amd64 -t puddlecat/sealos-brain-ui:kb-latest .",
-    "push-image": "docker push puddlecat/sealos-brain-ui:kb-latest"
+    "build-image": "docker build --platform linux/amd64 -t puddlecat/sealos-brain-ui:${VERSION:-kb-latest} .",
+    "push-image": "docker push puddlecat/sealos-brain-ui:${VERSION:-kb-latest}"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.864.0",
